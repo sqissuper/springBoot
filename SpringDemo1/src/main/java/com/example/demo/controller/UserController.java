@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.config.AppFinal;
+import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,24 +32,9 @@ import java.util.UUID;
 @Controller
 @Slf4j
 public class UserController {
-//    private Logger logger = LoggerFactory.getLogger(UserController.class);
 
-//    @RequestMapping("/param1")
-//    public String param1(@RequestBody User user) {
-//        return "姓名：" + user.getName() + ",账户名" + user.getUsername() + ",密码：" + user.getPassword();
-//    }
-//    @RequestMapping("/say")
-//    @ResponseBody
-//    public String getIndex(String name) {
-//        if(name == null || name.equals("")) {
-//            log.error("级别：error");
-//        }
-//        log.debug("级别：debug");
-//        log.info("级别：info");
-//        log.warn("级别：warn");
-//        log.trace("级别：track");
-//        return "hello spring";
-//    }
+    @Autowired
+    private UserMapper userMapper;
 
     @RequestMapping("/login")
     @ResponseBody
@@ -74,28 +61,13 @@ public class UserController {
         return map;
     }
 
-    @RequestMapping("/login3")
-    @ResponseBody // 当前方法返回的为数据而非视图
-    public Object login3(@RequestParam(name = "name") String username,
-                         String password,
-                         HttpServletRequest request) {
-        // 返回的对象
-        HashMap<String, Object> map = new HashMap<>();
-        int status = -1; // 非正常返回
-        String msg = "未知错误";
-        String data = "登录失败";
-        map.put("status", status);
-        map.put("msg", msg);
-        map.put("data", username);
-        return map;
-    }
 
     @RequestMapping("/reg")
     @ResponseBody
     public Object regin(String username,String password,@RequestPart MultipartFile file) throws IOException {
         //1.动态获取当前项目的路劲
         String path = ClassUtils.getDefaultClassLoader().getResource("static").getPath();
-        path += "/upload/";
+        path += AppFinal.IMAG_PATH;
         log.info("path:" + path);
         //2.文件名
 
@@ -105,6 +77,16 @@ public class UserController {
 
         //3.将文件保存到服务器
         file.transferTo(new File(path + fileName));
-        return "redirect:/login.html";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setPhoto(AppFinal.IMAG_PATH + fileName);
+        int res = userMapper.addUser(user);
+
+        if(res > 0) {
+            return "redirect:/login.html";
+        }
+        return "redirect:/regin.html";
     }
 }

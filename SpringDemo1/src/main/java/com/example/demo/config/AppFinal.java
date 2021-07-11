@@ -10,4 +10,6 @@ package com.example.demo.config;
  */
 public class AppFinal {
     public static final String USERINFO_SESSIONKEY = "userInfo";
+
+    public static final String IMAG_PATH = "/upload/";
 }
